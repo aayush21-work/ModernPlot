@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "modernplot"
+version = "1.0.0"
+description = "A GNUplot-inspired interactive scientific data plotting and curve fitting application"
+readme = "README.md"
+license = {text = "GPL-3.0-or-later"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Aayush Randeep"},
+]
+keywords = ["plotting", "curve-fitting", "scientific", "data-visualization", "gnuplot", "pyqt6"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "PyQt6>=6.5",
+    "matplotlib>=3.7",
+    "numpy>=1.24",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+fast = ["pybind11>=2.11"]
+dev = ["pyinstaller", "pybind11>=2.11"]
+
+[project.urls]
+Homepage = "https://github.com/aayush21-work/ModernPlot"
+Repository = "https://github.com/aayush21-work/ModernPlot"
+Issues = "https://github.com/aayush21-work/ModernPlot/issues"
+
+[project.gui-scripts]
+modernplot = "modernplot:main"
+
+[tool.setuptools]
+py-modules = ["modernplot"]
