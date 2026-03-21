@@ -42,7 +42,10 @@ import matplotlib
 # Optional: C++ accelerated file loader (pybind11)
 try:
     import fast_loader as _fast_loader
+    if not hasattr(_fast_loader, 'load'):
+         raise ImportError("fast_loader module found but missing 'load' function")
     HAS_FAST_LOADER = True
+    
 except ImportError:
     HAS_FAST_LOADER = False
 
@@ -1337,6 +1340,28 @@ class ModernPlot(QMainWindow):
         self.statusBar().showMessage(
             f"Loaded {os.path.basename(self.filepath)}: {total_rows:,} rows, {ncols} columns"
         )
+        
+        self.figure.clear()
+        ax = self.figure.add_subplot(111)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        fname = os.path.basename(self.filepath)
+        ax.text(0.5, 0.58, fname, transform=ax.transAxes,
+                ha="center", va="center", fontsize=18, color="#666666",
+                fontfamily="monospace", fontweight="bold")
+        ax.text(0.5, 0.47, f"{total_rows:,} rows  ×  {ncols} columns", transform=ax.transAxes,
+                ha="center", va="center", fontsize=13, color="#888888",
+                fontfamily="monospace")
+        col_list = ", ".join(self.headers[:6])
+        if len(self.headers) > 6:
+            col_list += f", … (+{len(self.headers)-6} more)"
+        ax.text(0.5, 0.38, col_list, transform=ax.transAxes,
+                ha="center", va="center", fontsize=10, color="#aaaaaa",
+                fontfamily="monospace")
+        ax.text(0.5, 0.28, "Select columns and click Plot", transform=ax.transAxes,
+                ha="center", va="center", fontsize=11, color="#bbbbbb",
+                fontfamily="monospace")
+        self.canvas.draw()
 
     def _on_load_error(self, msg):
         """Called if loading fails."""
