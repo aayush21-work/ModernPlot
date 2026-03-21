@@ -80,7 +80,7 @@ pyinstaller --onefile --windowed --name ModernPlot modernplot.py
 
 The binary will be in `dist/ModernPlot`.
 
----
+
 
 ## Quick Start
 
@@ -94,7 +94,7 @@ The binary will be in `dist/ModernPlot`.
 8. To fit: choose a fit type, select the target Y column in "Fit Y", and click **Plot + Fit**
 9. Export via **Export** button (PNG / PDF / SVG)
 
----
+
 
 ## User Interface
 
@@ -149,7 +149,7 @@ A scrollable panel containing all configuration options, organized into collapsi
 - **Matplotlib navigation toolbar** — zoom, pan, home, save (built-in matplotlib tools)
 - **Plot canvas** — white background, black text, publication-quality styling
 
----
+
 
 ## Supported File Formats
 
@@ -180,7 +180,7 @@ Tested with output from:
 - **Generic CSV/TSV** — Excel exports, pandas `.to_csv()`, etc.
 - **Fortran-style** — fixed-width whitespace-delimited with `!` or `#` comment headers
 
----
+
 
 ## Fit Models
 
@@ -217,7 +217,6 @@ a*tanh(b*(x - c)) + d
 
 Parameters are auto-detected from the expression using regex boundary matching, so `exp` won't be confused with parameter `e`, and `abs` won't match parameter `a`.
 
----
 
 ## Fit Scales
 
@@ -253,7 +252,6 @@ When a non-linear fit scale is selected:
 - Axis labels update to show the transform (e.g., "ln(P_s)")
 - R², residuals, and all statistics are computed in the transformed space
 
----
 
 ## Fit Results
 
@@ -293,31 +291,11 @@ Regardless of loader, column access is a single NumPy slice (`self.np_data[:, id
 
 When plotting, datasets larger than 15,000 points per series are automatically downsampled using stride-based decimation. This keeps matplotlib rendering fast without losing the visual shape of the data. Curve fitting always uses the full dataset.
 
-### Benchmarks (500,000 rows × 3 columns, 15.7 MB)
 
-| Operation | Python loader | C++ loader |
-|-----------|--------------|------------|
-| File read + parse | 0.7 s | **0.39 s** |
-| NumPy conversion | 0.6 s | **0 s** (already numeric) |
-| **Total load** | **1.3 s** | **0.39 s (2.9× faster)** |
-| Column access (×2) | 7 ms | 7 ms |
-| Plot (with downsampling) | < 100 ms | < 100 ms |
-| Linear fit | < 50 ms | < 50 ms |
 
----
 
-## Architecture
 
-### File structure
 
-```
-modernplot/
-├── modernplot.py            # Main application (~1700 lines)
-├── fast_loader.cpp          # C++ accelerated file parser (pybind11)
-├── Makefile                 # Build system for the C++ extension
-├── build_fast_loader.py     # Alternative Python build script
-├── README.md
-└── LICENSE
 ```
 
 ### Key classes
@@ -403,9 +381,7 @@ These constants at the top of `modernplot.py` can be adjusted:
 
 ---
 
-## License
 
-MIT License. See `LICENSE` for details.
 
 ---
 
