@@ -5,6 +5,7 @@ A GNUplot-inspired interactive scientific data plotting and curve fitting applic
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 ![PyQt6](https://img.shields.io/badge/GUI-PyQt6-green)
 
+
 ## Overview
 
 ModernPlot is a desktop application for quickly loading, visualizing, and fitting scientific data files. It combines the flexibility of GNUplot-style data exploration with a modern graphical interface. The plot canvas uses a white background with publication-quality styling so that exported figures are paper-ready with no post-processing.
@@ -12,7 +13,8 @@ ModernPlot is a desktop application for quickly loading, visualizing, and fittin
 ### Key Features
 
 - **Universal file loading** — CSV, TSV, whitespace-delimited `.dat`/`.txt` files, with automatic delimiter and header detection (including `#`-prefixed comment headers from CLASS, CAMB, Cobaya, etc.)
-- **Streaming loader** — large files (100K+ rows) load in a background thread with a progress bar and cancel button; the UI never freezes
+- **C++ accelerated loader** — optional pybind11 extension parses files directly into NumPy arrays at ~3× the speed of pure Python; auto-detected at startup
+- **Streaming fallback** — if the C++ extension isn't built, large files load in a background thread with a progress bar and cancel button; the UI never freezes
 - **Multi-series plotting** — checkbox-based column selection lets you overlay multiple Y columns on one plot
 - **5 plot types** — Line, Scatter, Line + Scatter, Step, Bar
 - **Axis scaling** — independent Linear / Log / Symlog for each axis
@@ -29,12 +31,36 @@ ModernPlot is a desktop application for quickly loading, visualizing, and fittin
 ### Requirements
 
 - Python 3.10 or later
+- A C++ compiler (g++, clang++) — optional, for the fast loader
 - Linux, macOS, or Windows (tested on CachyOS/Arch Linux with Wayland + NVIDIA)
 
 ### Install dependencies
 
 ```bash
-pip install PyQt6 matplotlib numpy scipy
+pip install PyQt6 matplotlib numpy scipy pybind11
+```
+
+### Build the C++ fast loader (recommended)
+
+```bash
+make
+```
+
+This compiles `fast_loader.cpp` into a Python extension (`.so`) using pybind11. The app auto-detects it at startup — if present, file loading is ~3× faster. If not built, the app falls back to a pure Python streaming loader.
+
+**Makefile targets:**
+
+| Target | Description |
+|--------|-------------|
+| `make` | Build `fast_loader.so` |
+| `make check` | Build and verify the import works |
+| `make clean` | Remove compiled `.so` files |
+
+**Manual build** (if `make` isn't available):
+
+```bash
+c++ -O3 -shared -fPIC $(python3 -m pybind11 --includes) \
+    fast_loader.cpp -o fast_loader$(python3-config --extension-suffix)
 ```
 
 ### Run
@@ -42,6 +68,8 @@ pip install PyQt6 matplotlib numpy scipy
 ```bash
 python modernplot.py
 ```
+
+The file label shows `[C++]` when the fast loader is active.
 
 ### Optional: Build standalone binary
 
@@ -247,19 +275,19 @@ The **Copy Results** button copies the plain-text version to clipboard for pasti
 
 ## Performance
 
-ModernPlot is designed to handle large datasets without freezing:
+ModernPlot is designed to handle large datasets without freezing. It uses a two-tier loading strategy:
 
-### Streaming file loader
+### C++ fast loader (primary)
 
-Files are read in a background `QThread` in chunks of 5,000 rows. The UI remains fully responsive during loading. A progress bar shows estimated progress and a Cancel button allows aborting.
+When the `fast_loader` extension is compiled (via `make`), files are parsed entirely in C++ using `strtod` and returned as a zero-copy NumPy array via pybind11. There is no Python string intermediate — the file goes directly from disk to a `float64` array. The app shows a loading screen on the canvas during this time.
 
-### One-time NumPy conversion
+### Python streaming loader (fallback)
 
-After loading, string data is converted to a `float64` NumPy 2D array in a single pass (with progress feedback). This takes ~0.6 seconds for 500K rows. After conversion, the string data is freed from memory.
+If the C++ extension isn't available, files are read in a background `QThread` in chunks of 5,000 rows. After loading, string data is converted to a NumPy array in a chunked loop with UI progress updates. This is slower but requires no compilation.
 
 ### Instant column access
 
-Selecting columns and replotting is effectively instant because `_get_column_data` is a single NumPy column slice (`self.np_data[:, idx]`), not a Python loop. For 500K rows this takes ~6ms vs ~100ms with the old approach.
+Regardless of loader, column access is a single NumPy slice (`self.np_data[:, idx]`), taking ~6ms for 500K rows.
 
 ### Automatic downsampling
 
@@ -267,13 +295,14 @@ When plotting, datasets larger than 15,000 points per series are automatically d
 
 ### Benchmarks (500,000 rows × 3 columns, 15.7 MB)
 
-| Operation | Time |
-|-----------|------|
-| File read (streaming) | 0.7 s |
-| NumPy conversion | 0.6 s |
-| Column access (2 columns) | 7 ms |
-| Plot (with downsampling) | < 100 ms |
-| Fit (linear) | < 50 ms |
+| Operation | Python loader | C++ loader |
+|-----------|--------------|------------|
+| File read + parse | 0.7 s | **0.39 s** |
+| NumPy conversion | 0.6 s | **0 s** (already numeric) |
+| **Total load** | **1.3 s** | **0.39 s (2.9× faster)** |
+| Column access (×2) | 7 ms | 7 ms |
+| Plot (with downsampling) | < 100 ms | < 100 ms |
+| Linear fit | < 50 ms | < 50 ms |
 
 ---
 
@@ -282,15 +311,22 @@ When plotting, datasets larger than 15,000 points per series are automatically d
 ### File structure
 
 ```
-modernplot.py          # Single-file application (~1600 lines)
+modernplot/
+├── modernplot.py            # Main application (~1700 lines)
+├── fast_loader.cpp          # C++ accelerated file parser (pybind11)
+├── Makefile                 # Build system for the C++ extension
+├── build_fast_loader.py     # Alternative Python build script
+├── README.md
+└── LICENSE
 ```
 
 ### Key classes
 
-| Class | Purpose |
-|-------|---------|
-| `ModernPlot(QMainWindow)` | Main application window; all UI, plotting, and fitting logic |
-| `DataLoaderWorker(QThread)` | Background thread for streaming file I/O |
+| Class | Language | Purpose |
+|-------|----------|---------|
+| `ModernPlot(QMainWindow)` | Python | Main application window; UI, plotting, fitting |
+| `DataLoaderWorker(QThread)` | Python | Background streaming file loader (fallback) |
+| `fast_loader` (pybind11 module) | C++ | High-performance file parser, returns NumPy arrays |
 
 ### Key functions
 
@@ -306,19 +342,26 @@ modernplot.py          # Single-file application (~1600 lines)
 
 ### Signal flow (data loading)
 
+**C++ path (when `fast_loader.so` is present):**
 ```
-User clicks "Open File"
-  → open_file() creates DataLoaderWorker(path) and starts it
-  → Worker emits headers_ready(list)
-      → _on_headers_ready(): populate column selectors and table headers
-  → Worker emits chunk_ready(list) every 5000 rows
-      → _on_chunk_ready(): append to raw_data, update table preview
-  → Worker emits progress(loaded, total)
-      → _on_load_progress(): update progress bar
-  → Worker emits finished(total_rows)
-      → _on_load_finished(): convert raw_data → np_data (NumPy), free strings
-  → Worker emits error(str) on failure
-      → _on_load_error(): show error dialog
+User clicks "Open File" → file dialog → path selected
+  → Loading screen drawn on canvas (filename, file size)
+  → QTimer.singleShot(50ms) defers load so screen paints
+  → _open_file_cpp(): calls fast_loader.load(path)
+      → C++ reads file, parses floats, returns NumPy array (zero-copy)
+  → Table preview + column selectors populated
+  → Summary screen shown on canvas
+```
+
+**Python fallback path (when `fast_loader.so` is absent):**
+```
+User clicks "Open File" → file dialog → path selected
+  → Loading screen drawn on canvas
+  → DataLoaderWorker(QThread) started
+  → Worker emits headers_ready → column selectors populated
+  → Worker emits chunk_ready every 5000 rows → raw_data grows
+  → Worker emits progress → progress bar updates
+  → Worker emits finished → NumPy conversion → string data freed
 ```
 
 ### Theming
@@ -349,12 +392,14 @@ These constants at the top of `modernplot.py` can be adjusted:
 
 ## Dependencies
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `PyQt6` | ≥ 6.5 | GUI framework |
-| `matplotlib` | ≥ 3.7 | Plotting |
-| `numpy` | ≥ 1.24 | Numeric arrays |
-| `scipy` | ≥ 1.10 | Curve fitting (`scipy.optimize.curve_fit`) |
+| Package | Version | Required | Purpose |
+|---------|---------|----------|---------|
+| `PyQt6` | ≥ 6.5 | Yes | GUI framework |
+| `matplotlib` | ≥ 3.7 | Yes | Plotting |
+| `numpy` | ≥ 1.24 | Yes | Numeric arrays |
+| `scipy` | ≥ 1.10 | Yes | Curve fitting (`scipy.optimize.curve_fit`) |
+| `pybind11` | ≥ 2.11 | No (build only) | Compiling the C++ fast loader |
+| C++ compiler | g++ or clang++ | No | Compiling the C++ fast loader |
 
 ---
 
