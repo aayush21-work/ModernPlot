@@ -4,7 +4,6 @@ A GNUplot-inspired interactive scientific data plotting and curve fitting applic
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 ![PyQt6](https://img.shields.io/badge/GUI-PyQt6-green)
-![License: MIT](https://img.shields.io/badge/license-MIT-yellow)
 
 ## Overview
 
