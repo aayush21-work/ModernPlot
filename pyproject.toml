@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=68.0", "wheel", "pybind11>=2.11"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "modernplot"
-version = "1.0.0"
+version = "1.0.2"
 description = "A GNUplot-inspired interactive scientific data plotting and curve fitting application"
 readme = "README.md"
 license = {text = "GPL-3.0-or-later"}
@@ -17,13 +17,13 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Operating System :: OS Independent",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Visualization",
     "Topic :: Scientific/Engineering :: Physics",
 ]
@@ -35,7 +35,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-fast = ["pybind11>=2.11"]
 dev = ["pyinstaller", "pybind11>=2.11"]
 
 [project.urls]
