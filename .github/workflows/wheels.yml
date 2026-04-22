@@ -33,6 +33,7 @@ jobs:
           # macOS: libomp is installed on the host by the step above;
           # tell the linker where to find its headers and libs.
           CIBW_ENVIRONMENT_MACOS: >-
+            MACOSX_DEPLOYMENT_TARGET="14.0"
             CFLAGS="-I$(brew --prefix libomp)/include"
             CXXFLAGS="-I$(brew --prefix libomp)/include"
             LDFLAGS="-L$(brew --prefix libomp)/lib"
