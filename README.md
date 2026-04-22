@@ -12,27 +12,36 @@ ModernPlot is a desktop application for quickly loading, visualizing, and fittin
 
 ### Key Features
 
-- **Universal file loading** — CSV, TSV, whitespace-delimited `.dat`/`.txt` files, with automatic delimiter and header detection (including `#`-prefixed comment headers from CLASS, CAMB, Cobaya, etc.)
-- **C++ accelerated loader** — optional pybind11 extension parses files directly into NumPy arrays at ~3× the speed of pure Python; auto-detected at startup
-- **Streaming fallback** — if the C++ extension isn't built, large files load in a background thread with a progress bar and cancel button; the UI never freezes
-- **Multi-series plotting** — checkbox-based column selection lets you overlay multiple Y columns on one plot
-- **5 plot types** — Line, Scatter, Line + Scatter, Step, Bar
-- **Axis scaling** — independent Linear / Log / Symlog for each axis
-- **8 curve fitting models** — Linear, Polynomial (degree 2–15), Exponential, Power Law, Logarithmic, Gaussian, Sinusoidal, and Custom Expression
-- **7 fit scale transforms** — linear, log₁₀-log₁₀, ln-ln, semilog-x (log₁₀ or ln), semilog-y (log₁₀ or ln)
-- **Fit diagnostics** — parameter values ± uncertainties, R², reduced χ², RMS residual, degrees of freedom, optional residuals subplot with ±1σ band
-- **Paper-ready exports** — white-background plots exported as PNG (200 DPI), PDF, or SVG
-- **Dark UI** — Tokyo Night theme for the application chrome; white canvas for the plot
+- **Universal file loading** - CSV, TSV, whitespace-delimited `.dat`/`.txt` files, with automatic delimiter and header detection (including `#`-prefixed comment headers from CLASS, CAMB, Cobaya, etc.)
+- **C++ accelerated loader** - optional pybind11 extension parses files directly into NumPy arrays at ~3× the speed of pure Python; auto-detected at startup
+- **Streaming fallback** - if the C++ extension isn't built, large files load in a background thread with a progress bar and cancel button; the UI never freezes
+- **Multi-series plotting** - checkbox-based column selection lets you overlay multiple Y columns on one plot
+- **5 plot types** - Line, Scatter, Line + Scatter, Step, Bar
+- **Axis scaling** - independent Linear / Log / Symlog for each axis
+- **8 curve fitting models** - Linear, Polynomial (degree 2–15), Exponential, Power Law, Logarithmic, Gaussian, Sinusoidal, and Custom Expression
+- **7 fit scale transforms** - linear, log₁₀-log₁₀, ln-ln, semilog-x (log₁₀ or ln), semilog-y (log₁₀ or ln)
+- **Fit diagnostics** - parameter values ± uncertainties, R², reduced χ², RMS residual, degrees of freedom, optional residuals subplot with ±1σ band
+- **Paper-ready exports** - white-background plots exported as PNG (200 DPI), PDF, or SVG
+- **Dark UI** - Tokyo Night theme for the application chrome; white canvas for the plot
 
 ---
 
-## Installation
+## Installation ( Recommended )
+
+### Pip Install
+```bash
+pip install modernplot
+```
+- All the required dependencies are out of the box.
+- Uses FastLoader for loading files, falls back to native Python (for Windows)
+
+## Manual Installation 
 
 ### Requirements
 
 - Python 3.10 or later
-- A C++ compiler (g++, clang++) — optional, for the fast loader
-- Linux, macOS, or Windows (tested on CachyOS/Arch Linux with Wayland + NVIDIA)
+- A C++ compiler (g++, clang++)
+- Linux, macOS, or Windows(C++ backend is not supported as of now)
 
 ### Install dependencies
 
@@ -105,49 +114,49 @@ The application is split into two regions:
 A scrollable panel containing all configuration options, organized into collapsible groups:
 
 #### Data Source
-- **Open File…** — opens a file dialog for supported formats
-- **Progress bar** — appears during loading; shows row count and estimated total
-- **Cancel** — stops a long-running load
-- **Data preview table** — shows the first 50 rows of loaded data
+- **Open File…** - opens a file dialog for supported formats
+- **Progress bar** - appears during loading; shows row count and estimated total
+- **Cancel** - stops a long-running load
+- **Data preview table** - shows the first 50 rows of loaded data
 
 #### Columns
-- **X axis** — dropdown to select the X column (includes a "(row index)" option for index-based plotting)
-- **Y axis** — checkboxes for each column; check multiple to overlay series on one plot
+- **X axis** - dropdown to select the X column (includes a "(row index)" option for index-based plotting)
+- **Y axis** - checkboxes for each column; check multiple to overlay series on one plot
 
 #### Plot Options
-- **Type** — Line, Scatter, Line + Scatter, Step, Bar
-- **X scale / Y scale** — linear, log, symlog (applied independently)
-- **Show grid** — toggle dashed grid lines
-- **Show legend** — toggle the legend box
+- **Type** - Line, Scatter, Line + Scatter, Step, Bar
+- **X scale / Y scale** - linear, log, symlog (applied independently)
+- **Show grid** - toggle dashed grid lines
+- **Show legend** - toggle the legend box
 
 #### Curve Fitting
-- **Fit type** — dropdown with 9 options (see [Fit Models](#fit-models))
-- **Degree** — polynomial degree spinner (visible only when Polynomial is selected, range 2–15)
-- **f(x) =** — custom expression input (visible only when Custom Expression is selected)
-- **Fit Y** — which Y column to fit (defaults to first checked column)
-- **Show residuals subplot** — adds a residuals panel below the main plot
-- **Show equation on plot** — overlays the fit equation and R² on the canvas
-- **Show confidence band** — shades ±1σ around the fit curve
-- **Fit scale** — data transform applied before fitting (see [Fit Scales](#fit-scales))
+- **Fit type** - dropdown with 9 options (see [Fit Models](#fit-models))
+- **Degree** - polynomial degree spinner (visible only when Polynomial is selected, range 2–15)
+- **f(x) =** - custom expression input (visible only when Custom Expression is selected)
+- **Fit Y** - which Y column to fit (defaults to first checked column)
+- **Show residuals subplot** - adds a residuals panel below the main plot
+- **Show equation on plot** - overlays the fit equation and R² on the canvas
+- **Show confidence band** - shades ±1σ around the fit curve
+- **Fit scale** - data transform applied before fitting (see [Fit Scales](#fit-scales))
 
 #### Labels
-- **Title** — plot title (optional)
-- **X label / Y label** — axis labels (default to column names if empty)
+- **Title** - plot title (optional)
+- **X label / Y label** - axis labels (default to column names if empty)
 
 #### Buttons
-- **Plot** — plot data only (no fit)
-- **Plot + Fit** — plot data and overlay the fit curve
-- **Export** — save figure as PNG (200 DPI) / PDF / SVG
-- **Clear** — reset the canvas
+- **Plot** - plot data only (no fit)
+- **Plot + Fit** - plot data and overlay the fit curve
+- **Export** - save figure as PNG (200 DPI) / PDF / SVG
+- **Clear** - reset the canvas
 
 #### Fit Results
 - Displays fit equation, parameter table (value ± error), R², reduced χ², RMS residual, N, and degrees of freedom
-- **Copy Results** — copies the plain-text results to clipboard
+- **Copy Results** - copies the plain-text results to clipboard
 
 ### Right Panel (Canvas)
 
-- **Matplotlib navigation toolbar** — zoom, pan, home, save (built-in matplotlib tools)
-- **Plot canvas** — white background, black text, publication-quality styling
+- **Matplotlib navigation toolbar** - zoom, pan, home, save (built-in matplotlib tools)
+- **Plot canvas** - white background, black text, publication-quality styling
 
 ---
 
@@ -165,20 +174,20 @@ ModernPlot auto-detects file structure based on extension and content:
 
 Headers are detected in three ways (in priority order):
 
-1. **`#`-prefixed comment header** — the last `#` line before data begins is parsed as column names. Supports multi-line comment blocks (e.g., CLASS output with several comment lines followed by `# 1:l  2:TT  3:EE ...`). Works with comma, tab, or whitespace separation within the header line.
+1. **`#`-prefixed comment header** - the last `#` line before data begins is parsed as column names. Supports multi-line comment blocks (e.g., CLASS output with several comment lines followed by `# 1:l  2:TT  3:EE ...`). Works with comma, tab, or whitespace separation within the header line.
 
-2. **Non-numeric first row** — if the first data row contains any non-numeric value, it is treated as a header row.
+2. **Non-numeric first row** - if the first data row contains any non-numeric value, it is treated as a header row.
 
-3. **Auto-generated** — if no header is detected, columns are named `col_0`, `col_1`, etc.
+3. **Auto-generated** - if no header is detected, columns are named `col_0`, `col_1`, etc.
 
 ### Compatibility
 
 Tested with output from:
-- **CLASS** — `*_cl.dat`, `*_pk.dat` (multi-line `#` comments, `1:l  2:TT` style headers)
-- **Cobaya/MontePython** — MCMC chain files (whitespace-padded, `#`-header with long column names like `chi2__planck_2018_lowl.TT`)
-- **NumPy `savetxt`** — with or without `# header` lines
-- **Generic CSV/TSV** — Excel exports, pandas `.to_csv()`, etc.
-- **Fortran-style** — fixed-width whitespace-delimited with `!` or `#` comment headers
+- **CLASS** - `*_cl.dat`, `*_pk.dat` (multi-line `#` comments, `1:l  2:TT` style headers)
+- **Cobaya/MontePython** - MCMC chain files (whitespace-padded, `#`-header with long column names like `chi2__planck_2018_lowl.TT`)
+- **NumPy `savetxt`** - with or without `# header` lines
+- **Generic CSV/TSV** - Excel exports, pandas `.to_csv()`, etc.
+- **Fortran-style** - fixed-width whitespace-delimited with `!` or `#` comment headers
 
 ---
 
@@ -262,12 +271,12 @@ After fitting, the results panel shows:
 - **Fit type** and **fit scale** (if non-linear)
 - **Equation** with numerical parameter values substituted
 - **Transform note** (e.g., "x → ln(x), y → ln(y)")
-- **Parameter table** — each parameter with value ± 1σ uncertainty (from covariance matrix diagonal)
-- **R²** — coefficient of determination (color-coded: green > 0.95, orange > 0.8, red otherwise)
-- **χ²_red** — reduced chi-squared (assuming unit weights)
-- **RMS** — root mean square of residuals
-- **N** — number of data points used
-- **DoF** — degrees of freedom (N − number of parameters)
+- **Parameter table** - each parameter with value ± 1σ uncertainty (from covariance matrix diagonal)
+- **R²** - coefficient of determination (color-coded: green > 0.95, orange > 0.8, red otherwise)
+- **χ²_red** - reduced chi-squared (assuming unit weights)
+- **RMS** - root mean square of residuals
+- **N** - number of data points used
+- **DoF** - degrees of freedom (N − number of parameters)
 
 The **Copy Results** button copies the plain-text version to clipboard for pasting into papers or notebooks.
 
@@ -359,9 +368,9 @@ User clicks "Open File" → file dialog → path selected
 
 The application uses a dual-theme approach:
 
-- **UI chrome** — Tokyo Night dark theme via Qt stylesheet (`DARK_BG`, `DARK_SURFACE`, `DARK_BORDER`, etc.)
-- **Plot canvas** — white background with dark text via matplotlib rcParams (`WHITE`, `BLACK`)
-- **Plot colors** — matplotlib tab10 palette, chosen for good contrast on white paper
+- **UI chrome** - Tokyo Night dark theme via Qt stylesheet (`DARK_BG`, `DARK_SURFACE`, `DARK_BORDER`, etc.)
+- **Plot canvas** - white background with dark text via matplotlib rcParams (`WHITE`, `BLACK`)
+- **Plot colors** - matplotlib tab10 palette, chosen for good contrast on white paper
 
 This means the dark sidebar is comfortable for extended use, while exported plots are immediately publication-ready.
 
