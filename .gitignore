@@ -1,3 +1,4 @@
 *.dat
 *.txt
 *.so
+__pycache__
